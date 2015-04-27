@@ -35,18 +35,23 @@ var getLastDb = function(){
     return localStorage.lastDbName;
 };
 
-$('#db-tree li').on('click', function(){
-    var dbName = $(this).find('.tree-title').html();
-    saveLastDb(dbName);
-    // display current db name
-    $('.layout-panel-west .panel-title').html(dbName);
-});
+$(function(){
+    $('#db-tree li').on('click', function(){
+        var dbName = $(this).find('.tree-title').html();
+        saveLastDb(dbName);
+        // display current db name
+        $('.layout-panel-west .panel-title').html(dbName);
+    });
 
-// select last db
-if (getLastDb){
-    $('#db-tree .tree-title').filter(
-        function(){
-            return this.innerHTML == getLastDb();
-        }
-    ).trigger('click');
-}
+    // select last db
+    if (getLastDb){
+        $('#db-tree .tree-title').filter(
+            function(index){
+                if (this.innerHTML == getLastDb()){
+                    $('#db-tree').parent().scrollTop(18 * index);
+                }
+                return this.innerHTML == getLastDb();
+            }
+        ).trigger('click');
+    }
+});
