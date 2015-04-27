@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Getting Started Extension's Popup</title>
+    <style>
+      body {
+        font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
+        font-size: 100%;
+      }
+      code {
+        color: #3F7CAC;
+      }
+      #popMain {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        max-width: 500px;
+        min-width: 300px;
+      }
+      .tab-header {
+        border-bottom: 1px solid #ccc;
+      }
+      .tab-header ul{
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        height: 26px;
+      }
+      .tab-header li {
+        display: inline-block;
+        width: 60px;
+        text-align: center;
+        cursor: pointer;
+        height: 100%;
+        line-height: 26px;
+        margin-right: -6px;
+        box-sizing: border-box;
+      }
+      .tab-header li.cur{
+        border-bottom: 1px solid #FFFFFF;
+      }
+      .desc-list {
+        list-style-type: decimal;
+        font-size: 13px;
+        font-family: 'Consolas', 'Microsoft Yahei'
+      }
+    </style>
+
+    <!--script src="popup.js"></script-->
+  </head>
+  <body>
+    <div id="popMain">
+      <div class="tab-header">
+        <ul>
+          <li class="cur">说明</li>
+        </ul>
+      </div>
+      <div>
+        <ul class="desc-list">
+          <h4>显示</h4>
+          <li>默认记住上次选择数据库</li>
+          <li>左上角显示当前数据库</li>
+          <h4>操作</h4>
+          <li><code>F8</code> OR <code>Ctrl-R</code> 执行语句</li>
+          <li><code>双击表名</code>-查看表结构</li>
+          <li><code>单击表名</code>-插入表名到编辑器中</li>
+          <li><code>右击表名</code>-简单查询此表的20条记录</li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>
+

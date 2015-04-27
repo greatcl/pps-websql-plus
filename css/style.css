@@ -1,0 +1,73 @@
+#historyBtn{
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 10;
+    width: 28px;
+    height: 28px;
+    background-image: url('../imgs/history_128.png');
+    background-size: 28px 28px;
+    cursor: pointer;
+}
+
+#historyPanel{
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 860px;
+    height: 70%;
+    z-index: 9;
+    background:rgba(0,0,0,0.6); 
+    font-size: 12px;
+}
+
+#historyPanel ul{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+#historyPanel>ul>li{
+    background-color: #FFF;
+    margin: 2px;
+    padding: 2px;
+    border-radius: 2px;
+}
+
+.history-sql-header{
+    border-bottom: 1px dashed #CCC;
+    height: 15px;
+    line-height: 15px;
+}
+
+.history-sql-header span::selection {
+    background:#64A857; 
+    color:#fff;
+}
+
+.history-sql-db{
+    color: #CCC;
+    margin-left: 5px;
+    position: absolute;
+    left: 25px;
+}
+.history-sql-star{
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    background-image: url('../imgs/no_star.png');
+    background-size: 14px 14px;
+}
+.history-sql-star.stared{
+    background-image: url('../imgs/star.png');
+}
+.history-sql-time {
+    color: #CCC;
+    position: absolute;
+    right: 10px;
+}
+
+.history-sql-body {
+    padding: 2px;
+    cursor: default;
+}
