@@ -20,14 +20,46 @@
     background:rgba(0,0,0,0.6); 
     font-size: 12px;
 }
+#historyPanelTitle {
+    color: #FFFFFF;
+    text-align: center;
+    background: #0F6DB3;
+}
+#historyPanelTitleTab {
+    float: left;
+    margin-left: 6px;
+}
+.history-tab {
+    margin-right: 5px;
+    cursor: pointer;
+    color: #CCC;
+}
+.history-tab.cur {
+    font-weight: bold;
+    color: #FFF;
+}
+#historyTitleBtn {
+    float: right;
+    margin-right: 6px;
+}
+.history-title-btn {
+    cursor: pointer;
+    display: inline-block;
+    margin-top: 3px;
+}
 
 #historyPanel ul{
     list-style-type: none;
     margin: 0;
     padding: 0;
 }
-
-#historyPanel>ul>li{
+#historyList {
+}
+#historyListWrapper {
+    height: 100%;
+    overflow: scroll;
+}
+#historyListWrapper>ul>li{
     background-color: #FFF;
     margin: 2px;
     padding: 2px;
@@ -46,28 +78,50 @@
 }
 
 .history-sql-db{
-    color: #CCC;
-    margin-left: 5px;
-    position: absolute;
-    left: 25px;
-}
-.history-sql-star{
+    margin: 0 0 5px 5px;
+    position: relative;
+    height: 20px;
+    vertical-align: middle;
     display: inline-block;
-    width: 14px;
-    height: 14px;
+}
+.history-sql-btn {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    background-size: 15px 15px;
+    cursor: pointer;
+}
+
+.history-sql-star{
     background-image: url('../imgs/no_star.png');
-    background-size: 14px 14px;
 }
 .history-sql-star.stared{
     background-image: url('../imgs/star.png');
 }
+
+.history-sql-delete{
+    background-image: url('../imgs/delete.png');
+}
+.history-sql-delete:hover{
+    background-image: url('../imgs/delete_active.png');
+}
+.history-sql-run{
+    background-image: url('../imgs/run.png');
+}
+
 .history-sql-time {
     color: #CCC;
-    position: absolute;
-    right: 10px;
+    position: relative;
+    float: right;
+    margin-right: 10px;
 }
 
 .history-sql-body {
     padding: 2px;
-    cursor: default;
+    padding-left: 8px;
+    cursor: pointer;
+}
+.stared .history-sql-db,  .stared .history-sql-body{
+    color: #B00000;
+    font-weight: bold;
 }

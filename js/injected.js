@@ -1,3 +1,58 @@
+var idb;
+
+$(document).on('click', '.history-sql-star', function(){
+    $(this).toggleClass('stared');
+    var recordItem = $(this).parent().parent().parent();
+    recordItem.toggleClass('stared');
+    idb.star(recordItem.attr('recordId'));
+});
+
+$(document).on('click', '.history-tab', function(){
+    $('.history-tab').removeClass('cur');
+    $(this).addClass('cur');
+    var dataType = $(this).attr('dataType');
+    localStorage.currentHistoryTab = dataType;
+    idb.showHistory(dataType);
+});
+
+$(document).on('click', '.history-sql-delete', function(){
+    var recordItem = $(this).parent().parent().parent();
+    idb.deleteRecord(recordItem.attr('recordId'));
+});
+
+// 双击sql语句
+$(document).on('dblclick', '.history-sql-body', function(){
+    var sql = $(this).html();
+    var db = $(this).siblings('.history-sql-header').find('.history-sql-db').html();
+
+    $('#db-tree .tree-title').filter(
+        function(index){
+            return this.innerHTML == db;
+        }
+    ).trigger('click');
+
+    var editor = getCurrentCM(getCurrentTabIndex());
+    editor.setValue(sql);
+    $('#sql-query-btn').trigger('click');
+    $('#historyPanel').hide();
+});
+
+// 点击执行按钮
+$(document).on('click', '.history-sql-run', function(){
+    var sql = $(this).parent().siblings('.history-sql-body').html();
+    var db = $(this).siblings('.history-sql-db').html();
+    $('#db-tree .tree-title').filter(
+        function(index){
+            return this.innerHTML == db;
+        }
+    ).trigger('click');
+
+    var editor = getCurrentCM(getCurrentTabIndex());
+    editor.setValue(sql);
+    $('#sql-query-btn').trigger('click');
+    $('#historyPanel').hide();
+});
+
 var bindEvent = function(){
     // data table tree event
     $("#table-tree").tree({
@@ -37,14 +92,11 @@ var bindEvent = function(){
     });
 
     $("#result-grid").datagrid({
-
         'onLoadSuccess' : function(data){
             $($("#result-grid").parents('div[region="center"]')[0]).show();
 
             var columnFileds = $('#result-grid').datagrid('getColumnFields');
-            $('#result-grid').datagrid({
-                'pageSize' : 20
-            });
+
             var colOpt = [];
             for(var idx in columnFileds){
                 var column = columnFileds[idx];
@@ -61,26 +113,23 @@ var bindEvent = function(){
                 'data' : data
             }, getCurrentTabIndex());
             console.log(getStorageSqlResult());
+
+            
         }
     });
 
-    // bind shortcut
-    // var editor = $('.CodeMirror')[0].CodeMirror;
-    // editor.setOption('extraKeys', {
-    //     'F8' : function(editor){
-    //         $('#sql-query-btn').trigger('click');
-    //     },
-    //     'Ctrl-R' : function(){
-    //         $('#sql-query-btn').trigger('click');
-    //     }
-    // });
-    // editor.setOption('lineNumbers', false);
-
     // something do when click ok button before the query send
     $('#sql-query-btn').bindFirst('click', function(){
-        // editor.setValue("select * from pps_user_game_order LIMIT 0, 15");
-        originCM().setValue(getCurrentCM(getCurrentTabIndex()).getValue());
+        var sql = getCurrentCM(getCurrentTabIndex()).getValue(),
+            currentDb = localStorage.lastDbName,
+            timestamp = new Date().getTime();
+        originCM().setValue(sql);
+        if (sql && currentDb){
+            idb.addRecord(currentDb, sql, timestamp);
+        }
     });
+
+
 };
 
 $.fn.bindFirst = function(name, fn) {
@@ -273,8 +322,6 @@ var createTabPanel = function(){
         });
     });
 
-    
-
     editorTitle.css({
 
     });
@@ -286,9 +333,22 @@ var createTabPanel = function(){
     });
 };
 
+var defaultTab = function(){
+    if (!localStorage.currentHistoryTab || localStorage.currentHistoryTab == 'all'){
+        $('#historyAllBtn').trigger('click');
+    } else {
+        $('#historyStaredBtn').trigger('click');
+    }
+};
+
 $(function(){
     sessionStorage["sqlResult"] = JSON.stringify([]);
     createTabPanel();
     $('#addTabBtn').trigger('click');
+
+    var idbStoreName = 'query-history';
+    idb = new RequestIDB(idbStoreName);
+    idb.initDb();
+    setTimeout("defaultTab()", 800);
     bindEvent();
 });
