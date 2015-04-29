@@ -347,8 +347,11 @@ $(function(){
     $('#addTabBtn').trigger('click');
 
     var idbStoreName = 'query-history';
-    idb = new RequestIDB(idbStoreName);
-    idb.initDb();
-    setTimeout("defaultTab()", 800);
-    bindEvent();
+
+    setTimeout(function(){
+        idb = new RequestIDB(idbStoreName);
+        idb.initDb();
+        setTimeout("defaultTab()", 800);
+        bindEvent();
+    }, 200);
 });
