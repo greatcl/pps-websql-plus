@@ -57,7 +57,7 @@
 }
 #historyListWrapper {
     height: 100%;
-    overflow: scroll;
+    overflow: auto;
 }
 #historyListWrapper>ul>li{
     background-color: #FFF;
