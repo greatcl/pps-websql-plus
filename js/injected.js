@@ -4,7 +4,11 @@ $(document).on('click', '.history-sql-star', function(){
     $(this).toggleClass('stared');
     var recordItem = $(this).parent().parent().parent();
     recordItem.toggleClass('stared');
-    idb.star(recordItem.attr('recordId'));
+    if (recordItem.hasClass('stared')){
+        idb.star(recordItem.attr('recordId'));
+    } else {
+        idb.star(recordItem.attr('recordId'), false);
+    }
 });
 
 $(document).on('click', '.history-tab', function(){
