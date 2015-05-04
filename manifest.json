@@ -3,7 +3,7 @@
 
   "name": "Websql Plus",
   "description": "websql 功能增强，支持多查询标签、F8或Ctrl-R执行、记住数据库、简单查询、历史记录等",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "icons": {
       "16": "imgs/icon_16.png",
       "48": "imgs/icon_48.png",
