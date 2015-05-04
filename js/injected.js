@@ -26,7 +26,7 @@ $(document).on('click', '.history-sql-delete', function(){
 
 // 双击sql语句
 $(document).on('dblclick', '.history-sql-body', function(){
-    var sql = $(this).html();
+    var sql = $(this).text();
     var db = $(this).siblings('.history-sql-header').find('.history-sql-db').html();
 
     $('#db-tree .tree-title').filter(
@@ -43,7 +43,7 @@ $(document).on('dblclick', '.history-sql-body', function(){
 
 // 点击执行按钮
 $(document).on('click', '.history-sql-run', function(){
-    var sql = $(this).parent().siblings('.history-sql-body').html();
+    var sql = $(this).parent().siblings('.history-sql-body').text();
     var db = $(this).siblings('.history-sql-db').html();
     $('#db-tree .tree-title').filter(
         function(index){

@@ -120,6 +120,7 @@
     padding: 2px;
     padding-left: 8px;
     cursor: pointer;
+    word-wrap: break-word;
 }
 .stared .history-sql-db,  .stared .history-sql-body{
     color: #B00000;
