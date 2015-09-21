@@ -1,5 +1,5 @@
 var idb;
-
+// 历史记录收藏按钮点击事件
 $(document).on('click', '.history-sql-star', function(){
     $(this).toggleClass('stared');
     var recordItem = $(this).parent().parent().parent();
@@ -11,6 +11,7 @@ $(document).on('click', '.history-sql-star', function(){
     }
 });
 
+// 历史记录tab页点击切换事件
 $(document).on('click', '.history-tab', function(){
     $('.history-tab').removeClass('cur');
     $(this).addClass('cur');
@@ -19,12 +20,13 @@ $(document).on('click', '.history-tab', function(){
     idb.showHistory(dataType);
 });
 
+// 历史记录删除按钮点击事件
 $(document).on('click', '.history-sql-delete', function(){
     var recordItem = $(this).parent().parent().parent();
     idb.deleteRecord(recordItem.attr('recordId'));
 });
 
-// 双击sql语句
+// 历史记录sql语句双击事件
 $(document).on('dblclick', '.history-sql-body', function(){
     var sql = $(this).text();
     var db = $(this).siblings('.history-sql-header').find('.history-sql-db').html();
@@ -106,19 +108,31 @@ var bindEvent = function(){
                 var column = columnFileds[idx];
                 var opt = {
                     field : column,
-                    title : column
+                    title : column,
+                    width : 120
                 };
                 colOpt.push(opt);
             }
 
-            // set current query result to session storage
-            setStorageSqlResult({
-                'colOpt' : colOpt,
-                'data' : data
-            }, getCurrentTabIndex());
-            console.log(getStorageSqlResult());
+            // todo
+            var currentTabResult = getStorageSqlResult(getCurrentTabIndex());
+            if (!currentTabResult){
+                // set current query result to session storage
+                setStorageSqlResult({
+                    'colOpt' : colOpt,
+                    'data' : data
+                }, getCurrentTabIndex());
 
-            
+                //$('#result-grid').datagrid({
+                //    columns : colOpt
+                //}).datagrid('loadData', data);
+            } else {
+                // set current query result to session storage
+                setStorageSqlResult({
+                    'colOpt' : colOpt,
+                    'data' : data
+                }, getCurrentTabIndex());
+            }
         }
     });
 
@@ -129,11 +143,9 @@ var bindEvent = function(){
             timestamp = new Date().getTime();
         originCM().setValue(sql);
         if (sql && currentDb){
-            idb.addRecord(currentDb, sql, timestamp);
+            idb.addUniqueRecord(currentDb, sql, timestamp);
         }
     });
-
-
 };
 
 $.fn.bindFirst = function(name, fn) {
@@ -357,5 +369,17 @@ $(function(){
         idb.initDb();
         setTimeout("defaultTab()", 800);
         bindEvent();
+        if (!localStorage.alreadyCleanRepeatHistory){
+            setTimeout(function(){
+                idb.cleanRepeatHistory();
+                localStorage.alreadyCleanRepeatHistory = 1;
+            }, 1000);
+        }
     }, 200);
 });
+
+/*
+Local Storage变量说明
+currentHistoryTab 历史记录面板当前标签页
+lastDbName 最近一次使用的数据库名称
+*/

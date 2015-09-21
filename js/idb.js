@@ -1,7 +1,7 @@
 var RequestIDB = (function(){
     var RequestIDB = function(storeName){
         this.dbName = 'plus-websql';
-        this.dbVersion = 1;
+        this.dbVersion = 2;
         this.storeName = storeName;
         this.db = null;
     };
@@ -14,19 +14,47 @@ var RequestIDB = (function(){
         };
 
         request.onerror = function(evt){
-            console.error("initDB: ", evt.target.errorCode);
+            console.error("initDB: ", evt.target.error);
         };
 
         request.onupgradeneeded = function(evt){
-            var store = evt.currentTarget.result.createObjectStore(
-                self.storeName,
-                {
+            if (evt.currentTarget.transaction.db.objectStoreNames.contains(self.storeName)){
+                var store = evt.currentTarget.transaction.objectStore(self.storeName);
+                //evt.currentTarget.transaction.db.deleteObjectStore(self.storeName);
+            } else {
+                // nothing to do
+                var store = evt.currentTarget.result.createObjectStore(self.storeName,{
                     keyPath : 'id',
                     autoIncrement : true
                 });
-            store.createIndex('timestamp', 'timestamp', {unique : false});
-            store.createIndex('db', 'db', {unique: false});
-            store.createIndex('star', 'star', {unique: false});
+            }
+            // delete already exist keys
+            var existIndexes = store.indexNames;
+            for(var i in existIndexes){
+                if (existIndexes.hasOwnProperty(i)){
+                    store.deleteIndex(existIndexes[i]);
+                }
+            }
+
+            var indexs = {
+                'db_sql' : {
+                    'cols' : ['db', 'sql'],
+                    'prop' : {unique : false}
+                },
+                'star_key' : {
+                    'cols' : ['star', 'timestamp'],
+                    'prop' : {unique : false}
+                },
+                'timestamp' : {
+                    'cols' : ['timestamp'],
+                    'prop' : {unique : false}
+                }
+            };
+            for (var indexName in indexs){
+                if (!store.indexNames.contains(indexName)){
+                    store.createIndex(indexName, indexs[indexName]['cols'], indexs[indexName]['prop']);
+                }
+            }
         };
     };
 
@@ -41,7 +69,8 @@ var RequestIDB = (function(){
             db : db,
             sql : sql,
             timestamp : timestamp,
-            star : 0
+            star : 0,
+            query_count : 1
         });
         request.onsuccess = function(evt){
             // @todo add to html
@@ -69,6 +98,102 @@ var RequestIDB = (function(){
         };
     };
 
+    RequestIDB.prototype.addUniqueRecord = function(db, sql, timestamp){
+        if (!this.db){
+            console.error('addUniqueRecord: the db is not initialized');
+            return;
+        }
+        var self = this;
+        var tx = this.db.transaction(this.storeName, 'readonly');
+        var store = tx.objectStore(this.storeName);
+        var boundKeyRange = IDBKeyRange.only([db, sql]);
+        var request = store.index('db_sql').count(boundKeyRange);
+
+        request.onsuccess = function(evt){
+            if (evt.target.result > 0){
+                if (evt.target.result == 1){
+                    self.updateQueryCount(db, sql, timestamp);
+                }
+            } else {
+                self.addRecord(db, sql, timestamp);
+            }
+        };
+    };
+
+    RequestIDB.prototype.formatTime = function(timestamp){
+        var toffset = (new Date()).getTimezoneOffset() * 60000;
+        var date = new Date(timestamp - toffset).toISOString(),
+            dateTime = date.substr(0, 10) + " " + date.substr(11, 8);
+        return dateTime;
+    };
+
+    RequestIDB.prototype.updateQueryCount = function(db, sql, timestamp){
+        if (!this.db){
+            console.error('updateQueryTimes: the db is not initialized');
+            return;
+        }
+        var self = this;
+        var tx = this.db.transaction(this.storeName, 'readonly');
+        var store = tx.objectStore(this.storeName);
+        var boundKeyRange = IDBKeyRange.only([db, sql]);
+        var request = store.index('db_sql').openCursor(boundKeyRange);
+
+        request.onsuccess = function(evt){
+            var record = evt.target.result;
+            if (record){
+                var value = record.value;
+                var recordId = value.id,
+                    query_count = value.query_count;
+                self.updateRecord(recordId, {'query_count': query_count + 1, 'timestamp' : timestamp});
+                var sqlItem = $('.history-sql-item[recordid="' + recordId + '"]');
+                sqlItem.remove();
+                sqlItem.find('.history-sql-time').html(self.formatTime(timestamp));
+                $('#historyList').prepend(sqlItem);
+            }
+        };
+    };
+
+    RequestIDB.prototype.cleanRepeatHistory = function(){
+        if (!this.db){
+            console.error("cleanRepeatHistory: the db is not initialized");
+            return;
+        }
+        var self = this;
+        var tx = this.db.transaction(this.storeName, "readonly");
+        var store = tx.objectStore(this.storeName);
+        var boundKeyRange = IDBKeyRange.lowerBound(0);
+        var request = store.index('timestamp').openCursor(boundKeyRange);
+        var deletedIds = [];
+
+        request.onsuccess = function(evt){
+            var record = evt.target.result;
+            if (record){
+                var value = record.value;
+                var recordId = value.id,
+                    db = value.db,
+                    sql = value.sql,
+                    timestamp = value.timestamp;
+                var keyRange = IDBKeyRange.only([db, sql]);
+                var dbSqlResult = store.index('db_sql').openCursor(keyRange);
+                dbSqlResult.onsuccess = function(newEvt){
+                    var dbSqlRecord = newEvt.target.result;
+                    if (dbSqlRecord){
+                        var dbSqlValue = dbSqlRecord.value;
+                        if (dbSqlValue.id != recordId && dbSqlValue.timestamp < timestamp && deletedIds.indexOf(dbSqlValue.id) == -1){
+                            self.deleteRecord(dbSqlValue.id);
+                            deletedIds.push(dbSqlValue.id);
+                            record.continue();
+                        } else {
+                            dbSqlRecord.continue();
+                        }
+                    } else {
+                        record.continue();
+                    }
+                };
+            }
+        };
+    };
+
     RequestIDB.prototype.showHistory = function(dataType){
         if (!this.db){
             console.error("showHistory: the db is not initialized");
@@ -78,11 +203,12 @@ var RequestIDB = (function(){
         var store = tx.objectStore(this.storeName);
         switch(dataType){
             case 'all':
-                var request = store.openCursor();
+                var boundKeyRange = IDBKeyRange.lowerBound(0);
+                var request = store.index('timestamp').openCursor(boundKeyRange);
                 break;
             case 'stared':
-                var boundKeyRange = IDBKeyRange.only(1);
-                var request = store.index('star').openCursor(boundKeyRange);
+                var boundKeyRange = IDBKeyRange.lowerBound([1, 0]);
+                var request = store.index('star_key').openCursor(boundKeyRange);
                 break;
             default:
                 var request = store.openCursor();
