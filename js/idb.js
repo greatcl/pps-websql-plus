@@ -31,7 +31,7 @@ var RequestIDB = (function(){
             // delete already exist keys
             var existIndexes = store.indexNames;
             for(var i in existIndexes){
-                if (existIndexes.hasOwnProperty(i)){
+                if (existIndexes.hasOwnProperty(i) && !isNaN(i)){
                     store.deleteIndex(existIndexes[i]);
                 }
             }

@@ -371,8 +371,12 @@ $(function(){
         bindEvent();
         if (!localStorage.alreadyCleanRepeatHistory){
             setTimeout(function(){
-                idb.cleanRepeatHistory();
-                localStorage.alreadyCleanRepeatHistory = 1;
+                try{
+                    idb.cleanRepeatHistory();
+                    localStorage.alreadyCleanRepeatHistory = 1;
+                } catch(ex){
+                    localStorage.alreadyCleanRepeatHistory = '';
+                }
             }, 1000);
         }
     }, 200);
